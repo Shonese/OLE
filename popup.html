@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OLE Focus Pause</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">技術検証版</p>
+      <h1>OLE Focus Pause</h1>
+      <p class="description">YouTubeを開くときの動作を設定します。</p>
+
+      <label class="field">
+        <span>モード</span>
+        <select id="mode">
+          <option value="intervention">介入して許可</option>
+          <option value="block">ブロック</option>
+          <option value="free">自由にアクセス</option>
+        </select>
+      </label>
+
+      <label class="field" id="seconds-field">
+        <span>待機時間</span>
+        <select id="wait-seconds">
+          <option value="3">3秒</option>
+          <option value="5">5秒</option>
+          <option value="10">10秒</option>
+        </select>
+      </label>
+
+      <button id="save" type="button">保存する</button>
+      <p id="status" role="status" aria-live="polite"></p>
+      <p class="hint">設定は次にYouTubeを読み込んだときから反映されます。</p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

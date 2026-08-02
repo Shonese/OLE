@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "OLE Focus Pause (PoC)",
+  "version": "0.1.0",
+  "description": "Firefox proof of concept for intentional pauses before distracting websites.",
+  "permissions": ["storage", "scripting"],
+  "background": {
+    "scripts": ["background.js"],
+    "service_worker": "background.js"
+  },
+  "optional_host_permissions": ["*://*/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https:"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "OLE Focus Pause の設定を開く"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ole-focus-pause@example.local",
+      "strict_min_version": "128.0"
+    }
+  }
+}

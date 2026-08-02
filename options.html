@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pause - 設定</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <header class="topbar"><a class="brand" href="#targets">Pause</a><span class="active-status"><i></i>有効</span><span id="save-status" role="status" aria-live="polite"></span></header>
+
+    <main>
+      <form id="settings-form">
+        <section id="targets" class="section-block sites-section">
+          <div class="section-heading"><div><h1>1. サイト</h1><p>介入・ブロックするサイトを登録します。</p></div></div>
+          <div class="site-add"><input id="site-url" type="text" list="suggested-sites" placeholder="例: youtube.com または https://example.com" aria-label="追加するサイトのURLまたはドメイン"><datalist id="suggested-sites"><option value="youtube.com" label="YouTube"><option value="instagram.com" label="Instagram"><option value="x.com" label="X"><option value="pixiv.net" label="pixiv"><option value="reddit.com" label="Reddit"><option value="tiktok.com" label="TikTok"></datalist><button id="add-site" class="outline-button" type="button">サイトを追加</button></div>
+          <div class="site-suggestions"><span>よく使うサイト</span><button type="button" data-suggest-site="youtube.com">YouTube</button><button type="button" data-suggest-site="instagram.com">Instagram</button><button type="button" data-suggest-site="x.com">X</button><button type="button" data-suggest-site="pixiv.net">pixiv</button><button type="button" data-suggest-site="reddit.com">Reddit</button><button type="button" data-suggest-site="tiktok.com">TikTok</button></div>
+          <p class="permission-note">追加時に、そのサイトで動作するためのFirefoxの権限を確認します。</p>
+          <div id="target-site-list" class="target-site-list"></div>
+        </section>
+
+        <section id="rules" class="section-block rules-section">
+          <div class="section-heading"><div><h2>2. アクセス時の動作</h2><p>スケジュールがない時間帯に使う共通ルールです。</p></div></div>
+          <fieldset>
+            <legend>動作</legend>
+            <div class="mode-grid">
+              <label class="mode-option"><input type="radio" name="mode" value="free"><span>自由にアクセス</span></label>
+              <label class="mode-option"><input type="radio" name="mode" value="intervention"><span>介入して許可</span></label>
+              <label class="mode-option"><input type="radio" name="mode" value="block"><span>ブロック</span></label>
+            </div>
+          </fieldset>
+          <div class="setting-row wait-setting" id="wait-row"><div><h3>待機時間</h3><p>水位が満ちるまでの時間です。</p></div><div class="wait-controls"><label class="duration-input"><input id="wait-seconds" type="number" min="1" max="1800" step="1" inputmode="numeric" aria-label="待機時間（秒）"><span>秒</span></label><div class="wait-presets" aria-label="待機時間のプリセット"><button type="button" data-wait-seconds="5">5秒</button><button type="button" data-wait-seconds="10">10秒</button><button type="button" data-wait-seconds="30">30秒</button><button type="button" data-wait-seconds="60">1分</button><button type="button" data-wait-seconds="300">5分</button><button type="button" data-wait-seconds="1800">30分</button></div></div></div>
+          <div class="setting-row toggle-row" id="reintervention-row"><span><h3>再介入</h3><p>サイトを開いてから指定時間後に、もう一度介入を表示します。</p></span><span class="reintervention-control"><label class="switch"><input id="enable-reintervention" type="checkbox"><span class="slider"></span></label><span class="reintervention-values"><span class="duration-input compact"><input id="reintervention-seconds" type="number" min="1" max="1800" step="1" inputmode="numeric" aria-label="再介入までの時間（秒）"><span>秒後</span></span><span class="reintervention-presets"><button type="button" data-reintervention-seconds="10">10秒</button><button type="button" data-reintervention-seconds="30">30秒</button><button type="button" data-reintervention-seconds="60">1分</button><button type="button" data-reintervention-seconds="300">5分</button><button type="button" data-reintervention-seconds="600">10分</button><button type="button" data-reintervention-seconds="1800">30分</button></span></span></span></div>
+          <div class="setting-row toggle-row"><span><h3>追加タブをブロック</h3><p>介入を完了したタブがある間、同じサイトを開く別タブをブロックします。</p></span><label class="switch"><input id="single-tab-lock" type="checkbox"><span class="slider"></span></label></div>
+        </section>
+
+        <section id="schedule" class="section-block schedule-section">
+          <div class="section-heading"><div><h2>3. スケジュール</h2><p>時間帯と適用するサイトを組み合わせて、動作を切り替えます。</p></div></div>
+          <button id="open-schedule-editor" class="outline-button add-schedule-button" type="button">＋ 時間帯を追加</button>
+          <div class="schedule-editor" hidden>
+            <div id="schedule-sites" class="schedule-sites" aria-label="このスケジュールを適用するサイト"></div>
+            <div class="day-picker" aria-label="曜日"><label><input type="checkbox" value="1">月</label><label><input type="checkbox" value="2">火</label><label><input type="checkbox" value="3">水</label><label><input type="checkbox" value="4">木</label><label><input type="checkbox" value="5">金</label><label><input type="checkbox" value="6">土</label><label><input type="checkbox" value="0">日</label></div>
+            <div class="schedule-controls"><div class="time-range"><input id="schedule-start" type="time" value="07:00" aria-label="開始時刻"><span>〜</span><input id="schedule-end" type="time" value="09:00" aria-label="終了時刻"></div><select id="schedule-mode" aria-label="時間帯の動作"><option value="free">自由にアクセス</option><option value="intervention">介入して許可</option><option value="block">ブロック</option></select><button id="add-schedule" class="outline-button" type="button">時間帯を追加</button></div>
+          </div>
+          <div id="schedule-list" class="schedule-list" aria-live="polite"></div>
+        </section>
+
+        <section id="stats" class="section-block stats-section">
+          <div class="section-heading"><div><h2>統計</h2><p>対象サイトを開こうとした回数を、このブラウザ内だけに保存します。</p></div><select id="stats-site-filter" aria-label="統計を表示するサイト"></select><button id="reset-stats" class="text-button" type="button">統計を消去</button></div>
+          <div class="stats-summary"><div><span>合計</span><strong id="stats-total">0</strong><small>回</small></div></div>
+          <div class="charts"><section><h3>曜日ごとの傾向</h3><div id="weekday-chart" class="bar-chart weekday-chart"></div></section><section><h3>時間帯ごとの傾向</h3><div id="hour-chart" class="bar-chart hour-chart"></div></section></div>
+        </section>
+        <p class="auto-save-note">変更は自動的に保存されます。</p>
+      </form>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

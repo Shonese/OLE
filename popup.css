@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  width: 280px;
+  margin: 0;
+  color: #1d2433;
+  background: #f7f8fc;
+}
+
+main { padding: 20px; }
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #596780;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+h1 { margin: 0; font-size: 20px; }
+
+.description, .hint {
+  color: #536176;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.field { display: grid; gap: 6px; margin-top: 16px; font-size: 13px; font-weight: 700; }
+
+select, button {
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 8px;
+  font: inherit;
+}
+
+select { padding: 9px 10px; border: 1px solid #c8d0de; background: #fff; color: #1d2433; }
+
+button { margin-top: 18px; padding: 10px; border: 0; background: #3659bf; color: #fff; font-weight: 700; cursor: pointer; }
+button:hover { background: #2949a5; }
+
+#status { min-height: 18px; margin: 8px 0 0; color: #1d6c43; font-size: 12px; }
+
+@media (prefers-color-scheme: dark) {
+  body { color: #eef2f8; background: #1c2028; }
+  .eyebrow, .description, .hint { color: #b7c0d0; }
+  select { border-color: #4e5768; color: #eef2f8; background: #282e39; }
+}
