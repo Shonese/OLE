@@ -3,7 +3,7 @@
   "name": "OLE Focus Pause (PoC)",
   "version": "0.1.0",
   "description": "Firefox proof of concept for intentional pauses before distracting websites.",
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage", "scripting", "alarms", "tabs"],
   "background": {
     "scripts": ["background.js"],
     "service_worker": "background.js"

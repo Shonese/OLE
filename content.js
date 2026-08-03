@@ -211,6 +211,11 @@
     }
   });
 
+  extensionApi.runtime.onMessage.addListener((message) => {
+    if (message?.type === "ole:schedule-boundary") {
+      start({ forceIntervention: true }).catch(console.error);
+    }
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && overlayMode === "intervention") {
       resetInterventionOnReturn = true;
