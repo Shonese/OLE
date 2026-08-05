@@ -34,6 +34,12 @@ let waitSaveTimer;
 let stats = DEFAULT_STATS;
 let editingScheduleId = null;
 
+function renderExtensionVersion() {
+  const version = extensionApi.runtime.getManifest().version;
+  const versionLabel = element("span", { text: `v${version}`, attributes: { id: "extension-version" } });
+  document.querySelector(".brand").after(versionLabel);
+}
+
 function selectedMode() { return document.querySelector("input[name=mode]:checked").value; }
 function updateModeUI() {
   const intervention = selectedMode() === "intervention";
@@ -47,37 +53,62 @@ function selectedDays() {
   return [...document.querySelectorAll(".day-picker input:checked")].map((input) => Number(input.value));
 }
 
+function element(tagName, { className, text, attributes = {}, dataset = {} } = {}, children = []) {
+  const node = document.createElement(tagName);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, String(value)));
+  Object.entries(dataset).forEach(([name, value]) => { node.dataset[name] = String(value); });
+  node.append(...children.filter(Boolean));
+  return node;
+}
+
+function emptyMessage(message) {
+  return element("p", { className: "empty-schedule", text: message });
+}
+
 function renderSchedule() {
   if (!schedule.length) {
-    scheduleList.innerHTML = '<p class="empty-schedule">登録されている時間帯はありません。</p>';
+    scheduleList.replaceChildren(emptyMessage("登録されている時間帯はありません。"));
     return;
   }
 
-  scheduleList.innerHTML = schedule.map((rule) => {
+  scheduleList.replaceChildren(...schedule.map((rule) => {
     const ruleSiteIds = rule.siteIds ?? (rule.siteId ? [rule.siteId] : []);
     const siteNames = ruleSiteIds.map((id) => sites.find((entry) => entry.id === id)?.domain).filter(Boolean);
-    return `
-    <div class="schedule-rule">
-      <span class="rule-site">${siteNames.length ? siteNames.map((domain) => `<span class="schedule-site-chip">${siteIconMarkup(domain)}${domain}</span>`).join("") : "削除済みサイト"}</span>
-      <span class="rule-days">${rule.days.map((day) => DAY_LABELS[day]).join("・")}</span>
-      <strong>${rule.start}〜${rule.end}</strong>
-      <span class="rule-mode" data-mode="${rule.mode}">${MODE_LABELS[rule.mode]}</span>
-      <button class="rule-delete" type="button" data-rule-id="${rule.id}" data-rule-action="edit">編集</button>
-      <button class="rule-delete" type="button" data-rule-id="${rule.id}">削除</button>
-    </div>`;
-  }).join("");
+    const siteLabel = element("span", { className: "rule-site" });
+    if (siteNames.length) {
+      siteNames.forEach((domain) => siteLabel.append(element("span", { className: "schedule-site-chip" }, [createSiteIcon(domain), document.createTextNode(domain)])));
+    } else {
+      siteLabel.textContent = "削除済みサイト";
+    }
+    const editButton = element("button", { className: "rule-delete", text: "編集", attributes: { type: "button" }, dataset: { ruleId: rule.id, ruleAction: "edit" } });
+    const deleteButton = element("button", { className: "rule-delete", text: "削除", attributes: { type: "button" }, dataset: { ruleId: rule.id } });
+    return element("div", { className: "schedule-rule" }, [
+      siteLabel,
+      element("span", { className: "rule-days", text: rule.days.map((day) => DAY_LABELS[day]).join("・") }),
+      element("strong", { text: `${rule.start}〜${rule.end}` }),
+      element("span", { className: "rule-mode", text: MODE_LABELS[rule.mode], dataset: { mode: rule.mode } }),
+      editButton,
+      deleteButton
+    ]);
+  }));
 }
 
 function renderScheduleSitePicker(selectedSiteIds = []) {
   if (!sites.length) {
-    scheduleSites.innerHTML = '<p class="empty-schedule">先に対象サイトを追加してください。</p>';
+    scheduleSites.replaceChildren(emptyMessage("先に対象サイトを追加してください。"));
     addSchedule.disabled = true;
     openScheduleEditor.disabled = true;
     return;
   }
   addSchedule.disabled = false;
   openScheduleEditor.disabled = false;
-  scheduleSites.innerHTML = sites.map((site) => `<label><input type="checkbox" value="${site.id}"${selectedSiteIds.includes(site.id) ? " checked" : ""}>${site.domain}</label>`).join("");
+  scheduleSites.replaceChildren(...sites.map((site) => {
+    const input = element("input", { attributes: { type: "checkbox", value: site.id } });
+    input.checked = selectedSiteIds.includes(site.id);
+    return element("label", {}, [input, document.createTextNode(site.domain)]);
+  }));
 }
 
 function resetScheduleEditor() {
@@ -109,12 +140,15 @@ function editRule(rule) {
 
 function renderChart(container, labels, values) {
   const max = Math.max(1, ...values);
-  container.innerHTML = values.map((value, index) => `
-    <div class="bar-item">
-      <span class="bar-value">${value}</span>
-      <span class="bar-track"><span class="bar-fill" style="height:${Math.max(2, (value / max) * 100)}%"></span></span>
-      <span class="bar-label">${labels[index]}</span>
-    </div>`).join("");
+  container.replaceChildren(...values.map((value, index) => {
+    const fill = element("span", { className: "bar-fill" });
+    fill.style.height = `${Math.max(2, (value / max) * 100)}%`;
+    return element("div", { className: "bar-item" }, [
+      element("span", { className: "bar-value", text: value }),
+      element("span", { className: "bar-track" }, [fill]),
+      element("span", { className: "bar-label", text: labels[index] })
+    ]);
+  }));
 }
 
 function renderStats() {
@@ -124,7 +158,10 @@ function renderStats() {
     ...Object.keys(stats.bySite ?? {})
   ])];
   const previousValue = selected;
-  statsSiteFilter.innerHTML = `<option value="all">すべてのサイト</option>${knownHosts.map((host) => `<option value="${host}">${host}</option>`).join("")}`;
+  statsSiteFilter.replaceChildren(
+    element("option", { text: "すべてのサイト", attributes: { value: "all" } }),
+    ...knownHosts.map((host) => element("option", { text: host, attributes: { value: host } }))
+  );
   statsSiteFilter.value = knownHosts.includes(previousValue) ? previousValue : "all";
   const siteStats = statsSiteFilter.value === "all" ? stats : stats.bySite?.[statsSiteFilter.value];
   const data = typeof siteStats === "object" && siteStats !== null ? siteStats : DEFAULT_STATS;
@@ -163,7 +200,7 @@ function normalizeSite(value) {
   return hostname.toLowerCase().replace(/^www\./, "");
 }
 
-function siteIconMarkup(domain) {
+function createSiteIcon(domain) {
   const icon = {
     "youtube.com": ["youtube", "▶"],
     "instagram.com": ["instagram", "◎"],
@@ -174,7 +211,9 @@ function siteIconMarkup(domain) {
   }[domain] ?? ["generic", "◌"];
   const primaryUrl = `https://${domain}/favicon.ico`;
   const fallbackUrl = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}`;
-  return `<span class="site-favicon site-favicon-${icon[0]}" aria-hidden="true"><span class="site-favicon-fallback">${icon[1]}</span><img class="site-favicon-image" src="${primaryUrl}" data-favicon-fallback="${fallbackUrl}" alt=""></span>`;
+  const fallback = element("span", { className: "site-favicon-fallback", text: icon[1] });
+  const image = element("img", { className: "site-favicon-image", attributes: { src: primaryUrl, alt: "" }, dataset: { faviconFallback: fallbackUrl } });
+  return element("span", { className: `site-favicon site-favicon-${icon[0]}`, attributes: { "aria-hidden": "true" } }, [fallback, image]);
 }
 
 document.addEventListener("error", (event) => {
@@ -190,10 +229,18 @@ document.addEventListener("error", (event) => {
 
 function renderTargetSites() {
   if (!sites.length) {
-    targetSiteList.innerHTML = '<p class="empty-schedule">対象サイトはまだ追加されていません。</p>';
+    targetSiteList.replaceChildren(emptyMessage("対象サイトはまだ追加されていません。"));
     return;
   }
-  targetSiteList.innerHTML = sites.map((site) => `<div class="target-site">${siteIconMarkup(site.domain)}<span><strong>${site.domain}</strong><br><small>追加したサイト</small></span><button class="rule-delete" type="button" data-site-id="${site.id}" aria-label="${site.domain} を削除">削除</button></div>`).join("");
+  targetSiteList.replaceChildren(...sites.map((site) => {
+    const details = element("span", {}, [
+      element("strong", { text: site.domain }),
+      element("br"),
+      element("small", { text: "追加したサイト" })
+    ]);
+    const deleteButton = element("button", { className: "rule-delete", text: "削除", attributes: { type: "button", "aria-label": `${site.domain} を削除` }, dataset: { siteId: site.id } });
+    return element("div", { className: "target-site" }, [createSiteIcon(site.domain), details, deleteButton]);
+  }));
 }
 
 async function synchronizeSites() {
@@ -376,5 +423,6 @@ extensionApi.storage.onChanged.addListener((changes, areaName) => {
   renderStats();
 });
 form.addEventListener("submit", (event) => event.preventDefault());
+renderExtensionVersion();
 
 loadSettings().catch(() => { showStatus("設定を読み込めませんでした。"); });
